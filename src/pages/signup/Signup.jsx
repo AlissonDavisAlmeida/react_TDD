@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios"
+import Input from "../../components/Input";
 
 function Signup() {
 
@@ -7,8 +8,8 @@ function Signup() {
         username: '',
         email: "",
         password: "",
-        confirmPassword: ""
-
+        confirmPassword: "",
+        errors: {}
     })
     const [apiProgress, setApiProgress] = useState(false)
     const [signUpSuccess, setSigUpSuccess] = useState(false)
@@ -31,18 +32,30 @@ function Signup() {
 
         setApiProgress(true)
 
+        try {
 
-        axios.post("/api/1.0/users", requestObjs)
-            .then(() => {
-                setSigUpSuccess(true)
-            })
+            await axios.post("/api/1.0/users", requestObjs)
+            setSigUpSuccess(true)
+        } catch (err) {
+            console.log(err)
+            if (err.response.status === 400) {
+                setState(prevState => {
+                    return {
+                        ...prevState,
+                        errors: err.response.data.validationErrors
+                    }
+                })
+            }
+        } finally {
+            setApiProgress(false)
+        }
 
     }
 
     return (
         <>
             <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2">
-                {!signUpSuccess && 
+                {!signUpSuccess &&
                     <form onSubmit={handleSubmit} className="card mt-5" data-testid="form-sign-up">
                         <div className="card-header">
 
@@ -52,26 +65,40 @@ function Signup() {
                         <div className="card-body">
 
 
-                            <div className="mb-3">
+                            <Input
+                                label="Username"
+                                type="text"
+                                value={state.username}
+                                id="username"
+                                onChange={onChange}
+                                error={state.errors.username}
+                            />
 
-                                <label htmlFor="username" className="form-label" title="Username">Username</label>
-                                <input type="text" placeholder="Username" className="form-control" value={state.username} id="username" onChange={onChange} />
-                            </div>
-                            <div className="mb-3">
+                            <Input
+                                label="Email"
+                                type={"email"}
+                                value={state.email}
+                                id="email"
+                                onChange={onChange}
+                                error={state.errors.email}
+                            />
+                            <Input
+                                label="Password"
+                                type="password"
+                                value={state.password}
+                                id="password"
+                                onChange={onChange}
+                                error={state.errors.password}
+                            />
+                            <Input
+                                label="Confirm Password"
+                                type="password"
+                                value={state.confirmPassword}
+                                id="confirmPassword"
+                                onChange={onChange}
+                                error={state.errors.confirmPassword}
+                            />
 
-                                <label className="form-label" htmlFor="email">Email</label>
-                                <input className="form-control" type="email" placeholder="Email" value={state.email} id="email" onChange={onChange} />
-                            </div>
-                            <div className="mb-3">
-
-                                <label className="form-label" htmlFor="password">Password</label>
-                                <input className="form-control" type="password" placeholder="Password" value={state.password} onChange={onChange} id="password" />
-                            </div>
-                            <div className="mb-3">
-
-                                <label className="form-label" htmlFor="confirmPassword">Confirm Password</label>
-                                <input className="form-control" type="password" placeholder="Confirm Password" value={state.confirmPassword} onChange={onChange} id="confirmPassword" />
-                            </div>
                             <div className="text-center">
 
                                 <button className="btn btn-primary" type="submit" disabled={!enableButton || apiProgress}>

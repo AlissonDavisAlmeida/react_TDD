@@ -120,7 +120,8 @@ describe("Signup Tests", () => {
                 username: "username",
                 email: "email",
                 password: "password",
-                confirmPassword: "password"
+                confirmPassword: "password",
+                errors:{}
             })
 
         })
@@ -190,6 +191,66 @@ describe("Signup Tests", () => {
             })
         })
 
+        test.each`
+        fieldName 
+        ${'username'}
+        ${'email'}
+        ${'password'}
+        ${'confirmPassword'} 
 
+        `(`displays $fieldName cannot be bull for $fieldName`, async({fieldName})=>{
+            server.use(
+                rest.post("/api/1.0/users", (req, res, ctx) => {
+                    counter += 1
+                    requestBody = req.body
+                    return res(ctx.status(400), ctx.json({
+                        validationErrors: {
+                            [fieldName]:  `${fieldName} cannot be null`
+                        }
+                    }))
+                })
+            )
+
+            setup()
+
+            await act(async () => {
+
+                userEvent.click(button)
+            })
+
+            const messageError = await screen.findByText(`${fieldName} cannot be null`)
+
+            expect(messageError).toBeInTheDocument()
+        })
+
+
+        test("hides spinner and enables button after response received", async()=>{
+            server.use(
+                rest.post("/api/1.0/users", (req, res, ctx) => {
+                    counter += 1
+                    requestBody = req.body
+                    return res(ctx.status(400), ctx.json({
+                        validationErrors: {
+                            username: "Username cannot be null"
+                        }
+                    }))
+                })
+            )
+
+            setup()
+
+            await act(async () => {
+
+                userEvent.click(button)
+            }
+            )
+
+            await waitFor(() => {
+                expect(screen.queryByRole('status')).not.toBeInTheDocument();
+                expect(button).toBeEnabled();
+            }
+            )
+        })
+        
     })
 })
