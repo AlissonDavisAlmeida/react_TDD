@@ -1,6 +1,8 @@
 import { useState } from "react";
 import axios from "axios"
 import Input from "../../components/Input";
+import { useTranslation } from "react-i18next";
+import { changeLanguage } from "i18next";
 
 function Signup() {
 
@@ -13,14 +15,20 @@ function Signup() {
     })
     const [apiProgress, setApiProgress] = useState(false)
     const [signUpSuccess, setSigUpSuccess] = useState(false)
+    const { i18n, t } = useTranslation()
+
+    let passwordMissmatch = state.password !== state.confirmPassword ? "Passwords do not match" : ""
 
     const enableButton = state.password.trim() === state.confirmPassword.trim() && state.password.trim().length > 0 ? true : false
 
     const onChange = (e) => {
         const { id, value } = e.target
 
+        const copyErrors = { ...state.errors }
+        delete copyErrors[id]
         setState({
             ...state,
+            errors: copyErrors,
             [id]: value
         })
     }
@@ -59,14 +67,14 @@ function Signup() {
                     <form onSubmit={handleSubmit} className="card mt-5" data-testid="form-sign-up">
                         <div className="card-header">
 
-                            <h1 className="text-center">Signup</h1>
+                            <h1 className="text-center">{t("signup")}</h1>
                         </div>
 
                         <div className="card-body">
 
 
                             <Input
-                                label="Username"
+                                label={t("username")}
                                 type="text"
                                 value={state.username}
                                 id="username"
@@ -75,7 +83,7 @@ function Signup() {
                             />
 
                             <Input
-                                label="Email"
+                                label={t("email")}
                                 type={"email"}
                                 value={state.email}
                                 id="email"
@@ -83,7 +91,7 @@ function Signup() {
                                 error={state.errors.email}
                             />
                             <Input
-                                label="Password"
+                                label={t("password")}
                                 type="password"
                                 value={state.password}
                                 id="password"
@@ -91,12 +99,12 @@ function Signup() {
                                 error={state.errors.password}
                             />
                             <Input
-                                label="Confirm Password"
+                                label={t("confirmPassword")}
                                 type="password"
                                 value={state.confirmPassword}
                                 id="confirmPassword"
                                 onChange={onChange}
-                                error={state.errors.confirmPassword}
+                                error={passwordMissmatch}
                             />
 
                             <div className="text-center">
@@ -105,7 +113,7 @@ function Signup() {
                                     {apiProgress &&
                                         <span className="spinner-border spinner-border-sm" role="status"></span>
                                     }
-                                    Signup
+                                    {t("signup")}
 
                                 </button>
                             </div>
@@ -117,6 +125,16 @@ function Signup() {
                         Account activation email sent
                     </div>
                 }
+                <img src="https://www.countryflagicons.com/FLAT/64/BR.png" 
+                     onClick={() => changeLanguage("pt")} 
+                     title="Portuguese" 
+                     alt="Portuguese"
+                     />
+                <img src="https://www.countryflagicons.com/FLAT/64/US.png" 
+                     onClick={() => changeLanguage("en")} 
+                     title="English"
+                     alt="English"
+                     />
             </div>
         </>
     );

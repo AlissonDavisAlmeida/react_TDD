@@ -4,7 +4,9 @@ import Signup from "../pages/signup/Signup"
 import { setupServer } from "msw/node"
 import { act } from "react-dom/test-utils"
 import { rest } from "msw"
-
+import "../locale/i18n"
+import en from "../locale/en_US.json"
+import pt from "../locale/pt_BR.json"
 describe("Signup Tests", () => {
 
     beforeEach(() => {
@@ -62,14 +64,14 @@ describe("Signup Tests", () => {
     })
 
     describe("Behavior", () => {
-        let button
+        let button, password, confirmPassword, username, email
 
         const setup = () => {
 
-            const username = screen.getByLabelText("Username")
-            const email = screen.getByLabelText("Email")
-            const password = screen.getByLabelText("Password")
-            const confirmPassword = screen.getByLabelText("Confirm Password")
+             username = screen.getByLabelText("Username")
+             email = screen.getByLabelText("Email")
+             password = screen.getByLabelText("Password")
+             confirmPassword = screen.getByLabelText("Confirm Password")
 
             userEvent.type(username, "username")
             userEvent.type(email, "email")
@@ -196,7 +198,6 @@ describe("Signup Tests", () => {
         ${'username'}
         ${'email'}
         ${'password'}
-        ${'confirmPassword'} 
 
         `(`displays $fieldName cannot be bull for $fieldName`, async({fieldName})=>{
             server.use(
@@ -252,5 +253,86 @@ describe("Signup Tests", () => {
             )
         })
         
+        test("displays mismatch message for confirm password input", async()=>{
+            setup()
+
+            userEvent.type(password, "password")
+            userEvent.type(confirmPassword, "password2")
+
+            expect(screen.queryByText("Passwords do not match")).toBeInTheDocument()
+        })
+
+        test.each`
+        field | message | label
+        ${'username'} | ${'Username cannot be null'} | ${'Username'}
+        ${'email'} | ${'Email cannot be null'} | ${'Email'}
+        ${'password'} | ${'Password cannot be null'} | ${'Password'}
+        
+        `("clears validations errors after typing in the field", async({field, message, label})=>{
+            server.use(
+                rest.post("/api/1.0/users", (req, res, ctx) => {
+                    return res(ctx.status(400), ctx.json({
+                        validationErrors: {
+                            [field]: message
+                        }
+                    }))
+                })
+            )
+            setup()
+
+            userEvent.click(button)
+
+            const validationError = await screen.findByText(message)
+            const fieldInput = screen.getByLabelText(label)
+            userEvent.type(fieldInput, field)
+            expect(validationError).not.toBeInTheDocument()
+            
+        })
+
+
+    })
+
+    describe.only("Internationalization", ()=>{
+        test("initially displays all text in English", async()=>{
+
+            expect(screen.getByRole("heading",{name:en.signup})).toBeInTheDocument()
+            expect(screen.getByRole("button",{name:en.signup})).toBeInTheDocument()
+            expect(screen.getByLabelText(en.username)).toBeInTheDocument()
+            expect(screen.getByLabelText(en.email)).toBeInTheDocument()
+            expect(screen.getByLabelText(en.password)).toBeInTheDocument()
+            expect(screen.getByLabelText(en.confirmPassword)).toBeInTheDocument()
+        })
+
+        test("changes text to Portuguese", async()=>{
+
+            await act(async () => {
+                userEvent.click(screen.getByTitle("Portuguese"))
+            })
+
+            expect(screen.getByRole("heading",{name:pt.signup})).toBeInTheDocument()
+            expect(screen.getByRole("button",{name:pt.signup})).toBeInTheDocument()
+            expect(screen.getByLabelText(pt.username)).toBeInTheDocument()
+            expect(screen.getByLabelText(pt.email)).toBeInTheDocument()
+            expect(screen.getByLabelText(pt.password)).toBeInTheDocument()
+            expect(screen.getByLabelText(pt.confirmPassword)).toBeInTheDocument()
+        })
+
+        test("changes text to English", async()=>{
+                
+                await act(async () => {
+                    userEvent.click(screen.getByTitle("Portuguese"))
+                })
+
+                await act(async () => {
+                    userEvent.click(screen.getByTitle("English"))
+                })
+    
+                expect(screen.getByRole("heading",{name:en.signup})).toBeInTheDocument()
+                expect(screen.getByRole("button",{name:en.signup})).toBeInTheDocument()
+                expect(screen.getByLabelText(en.username)).toBeInTheDocument()
+                expect(screen.getByLabelText(en.email)).toBeInTheDocument()
+                expect(screen.getByLabelText(en.password)).toBeInTheDocument()
+                expect(screen.getByLabelText(en.confirmPassword)).toBeInTheDocument()
+        })
     })
 })
