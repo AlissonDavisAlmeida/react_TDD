@@ -7,11 +7,43 @@ import { rest } from "msw"
 import "../locale/i18n"
 import en from "../locale/en_US.json"
 import pt from "../locale/pt_BR.json"
+import LanguageSelector from "../components/LanguageSelector"
+import i18n from "../locale/i18n"
+
+
+let requestBody
+let counter = 0
+let acceptLanguageHeader
+const server = setupServer(
+    rest.post("/api/1.0/users", (req, res, ctx) => {
+        counter += 1
+        requestBody = req.body
+        acceptLanguageHeader = req.headers.get("accept-language")
+        return res(ctx.status(200))
+    })
+)
+
+beforeEach(() => {
+    server.listen()
+})
+
+
+afterEach(() => {
+    server.close()
+    counter = 0
+})
+
 describe("Signup Tests", () => {
 
     beforeEach(() => {
 
-        render(<Signup />)
+        render(
+            <>
+
+                <Signup />
+                <LanguageSelector />
+            </>
+        )
     })
 
     describe("Layout", () => {
@@ -68,10 +100,10 @@ describe("Signup Tests", () => {
 
         const setup = () => {
 
-             username = screen.getByLabelText("Username")
-             email = screen.getByLabelText("Email")
-             password = screen.getByLabelText("Password")
-             confirmPassword = screen.getByLabelText("Confirm Password")
+            username = screen.getByLabelText("Username")
+            email = screen.getByLabelText("Email")
+            password = screen.getByLabelText("Password")
+            confirmPassword = screen.getByLabelText("Confirm Password")
 
             userEvent.type(username, "username")
             userEvent.type(email, "email")
@@ -123,7 +155,7 @@ describe("Signup Tests", () => {
                 email: "email",
                 password: "password",
                 confirmPassword: "password",
-                errors:{}
+                errors: {}
             })
 
         })
@@ -199,14 +231,14 @@ describe("Signup Tests", () => {
         ${'email'}
         ${'password'}
 
-        `(`displays $fieldName cannot be bull for $fieldName`, async({fieldName})=>{
+        `(`displays $fieldName cannot be bull for $fieldName`, async ({ fieldName }) => {
             server.use(
                 rest.post("/api/1.0/users", (req, res, ctx) => {
                     counter += 1
                     requestBody = req.body
                     return res(ctx.status(400), ctx.json({
                         validationErrors: {
-                            [fieldName]:  `${fieldName} cannot be null`
+                            [fieldName]: `${fieldName} cannot be null`
                         }
                     }))
                 })
@@ -225,7 +257,7 @@ describe("Signup Tests", () => {
         })
 
 
-        test("hides spinner and enables button after response received", async()=>{
+        test("hides spinner and enables button after response received", async () => {
             server.use(
                 rest.post("/api/1.0/users", (req, res, ctx) => {
                     counter += 1
@@ -252,14 +284,14 @@ describe("Signup Tests", () => {
             }
             )
         })
-        
-        test("displays mismatch message for confirm password input", async()=>{
+
+        test("displays mismatch message for confirm password input", async () => {
             setup()
 
             userEvent.type(password, "password")
             userEvent.type(confirmPassword, "password2")
 
-            expect(screen.queryByText("Passwords do not match")).toBeInTheDocument()
+            expect(screen.queryByText(en.passwodMismatchValidation)).toBeInTheDocument()
         })
 
         test.each`
@@ -268,7 +300,7 @@ describe("Signup Tests", () => {
         ${'email'} | ${'Email cannot be null'} | ${'Email'}
         ${'password'} | ${'Password cannot be null'} | ${'Password'}
         
-        `("clears validations errors after typing in the field", async({field, message, label})=>{
+        `("clears validations errors after typing in the field", async ({ field, message, label }) => {
             server.use(
                 rest.post("/api/1.0/users", (req, res, ctx) => {
                     return res(ctx.status(400), ctx.json({
@@ -286,53 +318,110 @@ describe("Signup Tests", () => {
             const fieldInput = screen.getByLabelText(label)
             userEvent.type(fieldInput, field)
             expect(validationError).not.toBeInTheDocument()
-            
+
         })
 
 
     })
 
-    describe.only("Internationalization", ()=>{
-        test("initially displays all text in English", async()=>{
+    describe.only("Internationalization", () => {
 
-            expect(screen.getByRole("heading",{name:en.signup})).toBeInTheDocument()
-            expect(screen.getByRole("button",{name:en.signup})).toBeInTheDocument()
+        let button, password, confirmPassword, username, email
+
+        const setup = () => {
+
+            username = screen.getByLabelText(en.username)
+            email = screen.getByLabelText(en.email)
+            password = screen.getByLabelText(en.password)
+            confirmPassword = screen.getByLabelText(en.confirmPassword)
+
+            userEvent.type(username, "username")
+            userEvent.type(email, "email@com.br")
+            userEvent.type(password, "password")
+            userEvent.type(confirmPassword, "password")
+            button = screen.getByRole("button", { name: "Signup" })
+        }
+
+        afterEach(async () => {
+            await act(async () => {
+
+                i18n.changeLanguage("en")
+            })
+        })
+
+        test("changes text to Portuguese", async () => {
+
+            await act(async () => {
+                userEvent.click(screen.getByTitle("Portuguese"))
+            })
+
+            expect(screen.getByRole("heading", { name: pt.signup })).toBeInTheDocument()
+            expect(screen.getByRole("button", { name: pt.signup })).toBeInTheDocument()
+            expect(screen.getByLabelText(pt.username)).toBeInTheDocument()
+            expect(screen.getByLabelText(pt.email)).toBeInTheDocument()
+            expect(screen.getByLabelText(pt.password)).toBeInTheDocument()
+            expect(screen.getByLabelText(pt.confirmPassword)).toBeInTheDocument()
+        })
+        test("initially displays all text in English", async () => {
+
+            expect(screen.getByRole("heading", { name: en.signup })).toBeInTheDocument()
+            expect(screen.getByRole("button", { name: en.signup })).toBeInTheDocument()
             expect(screen.getByLabelText(en.username)).toBeInTheDocument()
             expect(screen.getByLabelText(en.email)).toBeInTheDocument()
             expect(screen.getByLabelText(en.password)).toBeInTheDocument()
             expect(screen.getByLabelText(en.confirmPassword)).toBeInTheDocument()
         })
 
-        test("changes text to Portuguese", async()=>{
+        test("changes text to English", async () => {
 
             await act(async () => {
                 userEvent.click(screen.getByTitle("Portuguese"))
             })
 
-            expect(screen.getByRole("heading",{name:pt.signup})).toBeInTheDocument()
-            expect(screen.getByRole("button",{name:pt.signup})).toBeInTheDocument()
-            expect(screen.getByLabelText(pt.username)).toBeInTheDocument()
-            expect(screen.getByLabelText(pt.email)).toBeInTheDocument()
-            expect(screen.getByLabelText(pt.password)).toBeInTheDocument()
-            expect(screen.getByLabelText(pt.confirmPassword)).toBeInTheDocument()
+            await act(async () => {
+                userEvent.click(screen.getByTitle("English"))
+            })
+
+            expect(screen.getByRole("heading", { name: en.signup })).toBeInTheDocument()
+            expect(screen.getByRole("button", { name: en.signup })).toBeInTheDocument()
+            expect(screen.getByLabelText(en.username)).toBeInTheDocument()
+            expect(screen.getByLabelText(en.email)).toBeInTheDocument()
+            expect(screen.getByLabelText(en.password)).toBeInTheDocument()
+            expect(screen.getByLabelText(en.confirmPassword)).toBeInTheDocument()
         })
 
-        test("changes text to English", async()=>{
-                
-                await act(async () => {
-                    userEvent.click(screen.getByTitle("Portuguese"))
-                })
+        test("displays password mismatch message in Portuguese", async () => {
+            await act(async () => {
+                userEvent.click(screen.getByTitle("Portuguese"))
+            })
 
-                await act(async () => {
-                    userEvent.click(screen.getByTitle("English"))
-                })
-    
-                expect(screen.getByRole("heading",{name:en.signup})).toBeInTheDocument()
-                expect(screen.getByRole("button",{name:en.signup})).toBeInTheDocument()
-                expect(screen.getByLabelText(en.username)).toBeInTheDocument()
-                expect(screen.getByLabelText(en.email)).toBeInTheDocument()
-                expect(screen.getByLabelText(en.password)).toBeInTheDocument()
-                expect(screen.getByLabelText(en.confirmPassword)).toBeInTheDocument()
+            const passwordInput = screen.getByLabelText(pt.password)
+
+            userEvent.type(passwordInput, "password")
+
+            const validationMessage = screen.queryByText(pt.passwodMismatchValidation)
+
+            expect(validationMessage).toBeInTheDocument()
+
+        })
+
+        test("sends accept language header as en for outgoing request", async()=>{
+            setup()
+
+            userEvent.type(password, "password")
+            userEvent.type(confirmPassword, "password")
+
+            const form = screen.queryByTestId("form-sign-up")
+            await act(async () => {
+                userEvent.click(button)
+            })
+
+            // await waitForElementToBeRemoved(form)
+            
+
+            expect(acceptLanguageHeader).toBe("en")
+
+
         })
     })
 })

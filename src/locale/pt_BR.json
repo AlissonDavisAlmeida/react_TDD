@@ -3,5 +3,6 @@
     "username": "Nome de usuário",
     "email": "Email",
     "password": "Senha",
-    "confirmPassword": "Confirmar senha"
+    "confirmPassword": "Confirmar senha",
+    "passwodMismatchValidation": "Senhas não conferem"
 }

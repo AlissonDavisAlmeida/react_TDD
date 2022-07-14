@@ -1,8 +1,7 @@
 import { useState } from "react";
-import axios from "axios"
 import Input from "../../components/Input";
 import { useTranslation } from "react-i18next";
-import { changeLanguage } from "i18next";
+import { signup } from "../../api/apiCalls";
 
 function Signup() {
 
@@ -17,7 +16,7 @@ function Signup() {
     const [signUpSuccess, setSigUpSuccess] = useState(false)
     const { i18n, t } = useTranslation()
 
-    let passwordMissmatch = state.password !== state.confirmPassword ? "Passwords do not match" : ""
+    let passwordMissmatch = state.password !== state.confirmPassword ? t("passwodMismatchValidation"): ""
 
     const enableButton = state.password.trim() === state.confirmPassword.trim() && state.password.trim().length > 0 ? true : false
 
@@ -42,7 +41,7 @@ function Signup() {
 
         try {
 
-            await axios.post("/api/1.0/users", requestObjs)
+            await signup(requestObjs)
             setSigUpSuccess(true)
         } catch (err) {
             console.log(err)
@@ -125,16 +124,6 @@ function Signup() {
                         Account activation email sent
                     </div>
                 }
-                <img src="https://www.countryflagicons.com/FLAT/64/BR.png" 
-                     onClick={() => changeLanguage("pt")} 
-                     title="Portuguese" 
-                     alt="Portuguese"
-                     />
-                <img src="https://www.countryflagicons.com/FLAT/64/US.png" 
-                     onClick={() => changeLanguage("en")} 
-                     title="English"
-                     alt="English"
-                     />
             </div>
         </>
     );
