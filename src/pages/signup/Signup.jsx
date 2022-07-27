@@ -2,6 +2,8 @@ import { useState } from "react";
 import Input from "../../components/Input";
 import { useTranslation } from "react-i18next";
 import { signup } from "../../api/apiCalls";
+import Alert from "../../components/Alert";
+import Spinner from "../../components/Spinner";
 
 function Signup() {
 
@@ -16,7 +18,7 @@ function Signup() {
     const [signUpSuccess, setSigUpSuccess] = useState(false)
     const { i18n, t } = useTranslation()
 
-    let passwordMissmatch = state.password !== state.confirmPassword ? t("passwodMismatchValidation"): ""
+    let passwordMissmatch = state.password !== state.confirmPassword ? t("passwodMismatchValidation") : ""
 
     const enableButton = state.password.trim() === state.confirmPassword.trim() && state.password.trim().length > 0 ? true : false
 
@@ -44,7 +46,6 @@ function Signup() {
             await signup(requestObjs)
             setSigUpSuccess(true)
         } catch (err) {
-            console.log(err)
             if (err.response.status === 400) {
                 setState(prevState => {
                     return {
@@ -61,7 +62,7 @@ function Signup() {
 
     return (
         <>
-            <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2">
+            <div className="col-lg-6 offset-lg-3 col-md-8 offset-md-2" data-testid="signup-page">
                 {!signUpSuccess &&
                     <form onSubmit={handleSubmit} className="card mt-5" data-testid="form-sign-up">
                         <div className="card-header">
@@ -110,7 +111,7 @@ function Signup() {
 
                                 <button className="btn btn-primary" type="submit" disabled={!enableButton || apiProgress}>
                                     {apiProgress &&
-                                        <span className="spinner-border spinner-border-sm" role="status"></span>
+                                        <Spinner />
                                     }
                                     {t("signup")}
 
@@ -120,9 +121,8 @@ function Signup() {
                     </form>
                 }
                 {signUpSuccess &&
-                    <div className="alert alert-success mt-3" role="alert">
-                        Account activation email sent
-                    </div>
+                    <Alert type="success" message="Account activation email sent" />
+
                 }
             </div>
         </>

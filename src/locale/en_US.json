@@ -5,5 +5,7 @@
     "password": "Password",
     "confirmPassword": "Confirm Password",
     "changeLanguage": "Change Language",
+    "home": "Home",
+    "login": "Login",
     "passwodMismatchValidation": "Password mismatch"
   }

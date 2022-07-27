@@ -4,5 +4,7 @@
     "email": "Email",
     "password": "Senha",
     "confirmPassword": "Confirmar senha",
+    "home": "Início",
+    "login": "Entrar",
     "passwodMismatchValidation": "Senhas não conferem"
 }

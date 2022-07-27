@@ -8,3 +8,11 @@ export const signup = (requestObjs)=>{
         }
     })
 }
+
+export const activate = (token)=>{
+    return axios.post("/api/1.0/activate/"+token,{
+        headers:{
+            "Accept-language": i18n.language
+        }
+    })
+}

@@ -11,27 +11,6 @@ import LanguageSelector from "../components/LanguageSelector"
 import i18n from "../locale/i18n"
 
 
-let requestBody
-let counter = 0
-let acceptLanguageHeader
-const server = setupServer(
-    rest.post("/api/1.0/users", (req, res, ctx) => {
-        counter += 1
-        requestBody = req.body
-        acceptLanguageHeader = req.headers.get("accept-language")
-        return res(ctx.status(200))
-    })
-)
-
-beforeEach(() => {
-    server.listen()
-})
-
-
-afterEach(() => {
-    server.close()
-    counter = 0
-})
 
 describe("Signup Tests", () => {
 
@@ -324,7 +303,30 @@ describe("Signup Tests", () => {
 
     })
 
-    describe.only("Internationalization", () => {
+    describe("Internationalization", () => {
+
+
+        let requestBody
+        let counter = 0
+        let acceptLanguageHeader
+        const server = setupServer(
+            rest.post("/api/1.0/users", (req, res, ctx) => {
+                counter += 1
+                requestBody = req.body
+                acceptLanguageHeader = req.headers.get("accept-language")
+                return res(ctx.status(200))
+            })
+        )
+
+        beforeEach(() => {
+            server.listen()
+        })
+
+
+        afterEach(() => {
+            server.close()
+            counter = 0
+        })
 
         let button, password, confirmPassword, username, email
 
@@ -405,7 +407,7 @@ describe("Signup Tests", () => {
 
         })
 
-        test("sends accept language header as en for outgoing request", async()=>{
+        test("sends accept language header as en for outgoing request", async () => {
             setup()
 
             userEvent.type(password, "password")
@@ -417,7 +419,7 @@ describe("Signup Tests", () => {
             })
 
             // await waitForElementToBeRemoved(form)
-            
+
 
             expect(acceptLanguageHeader).toBe("en")
 
