@@ -16,3 +16,11 @@ export const activate = (token)=>{
         }
     })
 }
+
+export const loadUsers = (page, size)=>{
+    return axios.get("/api/1.0/users?page="+page+"&size="+size,{
+        headers:{
+            "Accept-language": i18n.language
+        }
+    })
+}

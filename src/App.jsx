@@ -5,6 +5,7 @@ import LoginPage from "./pages/login/LoginPage";
 import { useTranslation } from "react-i18next";
 import { BrowserRouter, Link, Route } from "react-router-dom";
 import AccountActivatePage from "./pages/activate/AccountActivatePage";
+import UserList from "./components/UserList";
 
 function App() {
 
@@ -30,6 +31,7 @@ function App() {
         <Route path={"/signup"} component={Signup} />
         <Route path={"/login"} component={LoginPage} />
         <Route path={"/activate/:token"} component={AccountActivatePage} />
+        <Route path={"/users"} component={UserList}/>
         <LanguageSelector />
 
       </div>
