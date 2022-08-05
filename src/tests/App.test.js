@@ -5,9 +5,25 @@ import {setupServer} from "msw/node"
 import {rest} from "msw"
 
 const server = setupServer(
-    rest.post("/api/1.0/activate/:token", (req, res, ctx) => {
-        counter += 1
-        return  res(ctx.status(200))
+    rest.get("/api/1.0/users", (req, res, ctx) => {
+        return  res(ctx.status(200),
+                    ctx.json({
+                        data:{
+
+                            content:[
+                                {
+                                    id: 1,
+                                    username: "user1",
+                                    email: "user1@email.com",
+                                    image: null
+                                }
+                            ],
+                            page:0,
+                            size:0, 
+                            totalPages:0
+                        }
+                    
+                    }))
     })
 )
 
@@ -20,7 +36,7 @@ beforeAll(() => server.listen())
 afterAll(() => server.close())
 
 
-describe.only("Routing", () => {
+describe("Routing", () => {
 
     const setup = (path) => {
         window.history.pushState({}, "", path)

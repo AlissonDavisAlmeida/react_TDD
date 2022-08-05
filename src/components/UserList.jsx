@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useEffect } from "react";
+import { Link } from "react-router-dom";
 import { loadUsers } from "../api/apiCalls";
 
 function UserList() {
@@ -45,20 +46,23 @@ function UserList() {
         <div className="card">
             <div className="card-header text-center">
                 <h3>Users</h3>
-                {totalPages > 1 && (
-                    users.map((user, index) => {
-                        return (
-                            <div key={index}>
-                                <h4>{user.username}</h4>
-                            </div>
-                        );
-                    })
-                )}
+                <ul className="list-group list-group-flush">
+
+                    {totalPages > 1 && (
+                        users.map((user, index) => {
+                            return (
+                                <li className="list-group-item list-group-item-action" key={index}>
+                                    <Link to={`/user/${user.id}`}>{user.username}</Link >
+                                </li>
+                            );
+                        })
+                    )}
+                </ul>
             </div>
             <div className="card-footer">
 
-            {currentPage > 0 && <button className="btn btn-outline-secondary btn-sm" onClick={loadPreviousPage}>prev</button>}
-            {totalPages > currentPage + 1 && <button className="btn btn-outline-secondary btn-sm" onClick={loadNextPage}>next</button>}
+                {currentPage > 0 && <button className="btn btn-outline-secondary btn-sm" onClick={loadPreviousPage}>prev</button>}
+                {totalPages > currentPage + 1 && <button className="btn btn-outline-secondary btn-sm" onClick={loadNextPage}>next</button>}
             </div>
         </div>
     );

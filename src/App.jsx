@@ -31,7 +31,7 @@ function App() {
         <Route path={"/signup"} component={Signup} />
         <Route path={"/login"} component={LoginPage} />
         <Route path={"/activate/:token"} component={AccountActivatePage} />
-        <Route path={"/users"} component={UserList}/>
+        {/* <Route exact path={"/users"} component={UserList}/> */}
         <LanguageSelector />
 
       </div>
