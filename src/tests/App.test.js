@@ -5,16 +5,17 @@ import { setupServer } from "msw/node"
 import { rest } from "msw"
 
 const server = setupServer(
-    rest.get("/api/1.0/users", (req, res, ctx) => {
+    rest.get("/api/1.0/users/:id", (req, res, ctx) => {
+        const id = + req.params.id
         return res(ctx.status(200),
             ctx.json({
                 data: {
 
                     content: [
                         {
-                            id: 1,
-                            username: "user1",
-                            email: "user1@email.com",
+                            id,
+                            username: "user" + id,
+                            email: "user" + id + "@email.com",
                             image: null
                         }
                     ],
@@ -30,6 +31,7 @@ const server = setupServer(
     rest.post("/api/1.0/auth", (req, res, ctx) => {
         return res(ctx.status(200),
             ctx.json({
+                id: 5,
                 username: "user5",
                 data: {
                     token: "token"
@@ -126,15 +128,12 @@ describe("Routing", () => {
 })
 
 
-describe("Login", () => {
+describe.only("Login", () => {
 
     const setup = (path) => {
         window.history.pushState({}, "", path)
 
         render(<App />)
-    }
-    it("redirects to homepage after login", async () => {
-        setup("/login")
 
         const email = screen.getByLabelText("Email")
         const password = screen.getByLabelText("Password")
@@ -146,7 +145,50 @@ describe("Login", () => {
 
         userEvent.click(button)
 
+    }
+    it("redirects to homepage after login", async () => {
+        setup("/login")
+
+
+
         const page = await screen.findByTestId("home-page")
         expect(page).toBeInTheDocument()
+    })
+
+    it("hides login and Sign Up from navbar after successful login", async () => {
+        setup("/login")
+
+
+        await screen.findByTestId("home-page")
+
+        const loginLink = screen.queryByRole("link", { name: "Login" })
+        const signupLink = screen.queryByRole("link", { name: "Signup" })
+
+        expect(loginLink).not.toBeInTheDocument()
+        expect(signupLink).not.toBeInTheDocument()
+    })
+
+    it("displays my profile link on navbar after successful login", async () => {
+        setup("/login")
+
+        await screen.findByTestId("home-page")
+
+        const myProfileLink = screen.getByRole("link", { name: "My Profile" })
+
+        expect(myProfileLink).toBeInTheDocument()
+    })
+
+    it("displays user page with logged in user id in url after clicking My Profile", async () => {
+        setup("/login")
+
+        await screen.findByTestId("home-page")
+
+        const myProfileLink = screen.getByRole("link", { name: "My Profile" })
+
+        userEvent.click(myProfileLink)
+
+        const currentUser = await screen.findByText("user5")
+
+        expect(currentUser).toBeInTheDocument()
     })
 })

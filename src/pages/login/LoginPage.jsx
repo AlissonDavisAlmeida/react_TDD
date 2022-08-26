@@ -5,6 +5,7 @@ import Alert from "../../components/Alert"
 import { login } from "../../api/apiCalls";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useHistory } from "react-router-dom";
 
 function LoginPage(props) {
 
@@ -16,6 +17,7 @@ function LoginPage(props) {
     const [apiProgress, setApiProgress] = useState(false)
     const [errorMessage, setErrorMessage] = useState("")
 
+    const history = useHistory()
 
     const { i18n, t } = useTranslation()
 
@@ -40,12 +42,16 @@ function LoginPage(props) {
         try {
             console.log(state)
             const { email, password } = state;
-            await login(email, password)
+            const response = await login(email, password)
             setApiProgress(false)
-            props.history.push("/")
+            props.setAuth({
+                isLoggedIn: true,
+                id: response.data.id
+            })
+            history.push("/")
         } catch (err) {
             setApiProgress(false)
-            setErrorMessage(err.response.data.message)
+            setErrorMessage(err.messageqq)
         }
 
 
