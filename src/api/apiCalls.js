@@ -24,3 +24,10 @@ export const loadUsers = (page, size)=>{
         }
     })
 }
+
+export const login = (email, password)=>{
+    return axios.post("/api/1.0/auth", {
+        email,
+        password
+    })
+}

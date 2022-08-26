@@ -16,7 +16,7 @@ function Signup() {
     })
     const [apiProgress, setApiProgress] = useState(false)
     const [signUpSuccess, setSigUpSuccess] = useState(false)
-    const { i18n, t } = useTranslation()
+    const {  t } = useTranslation()
 
     let passwordMissmatch = state.password !== state.confirmPassword ? t("passwodMismatchValidation") : ""
 

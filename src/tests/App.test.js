@@ -1,34 +1,45 @@
 const { render, screen } = require("@testing-library/react")
 import userEvent from "@testing-library/user-event"
 import App from "../App"
-import {setupServer} from "msw/node"
-import {rest} from "msw"
+import { setupServer } from "msw/node"
+import { rest } from "msw"
 
 const server = setupServer(
     rest.get("/api/1.0/users", (req, res, ctx) => {
-        return  res(ctx.status(200),
-                    ctx.json({
-                        data:{
+        return res(ctx.status(200),
+            ctx.json({
+                data: {
 
-                            content:[
-                                {
-                                    id: 1,
-                                    username: "user1",
-                                    email: "user1@email.com",
-                                    image: null
-                                }
-                            ],
-                            page:0,
-                            size:0, 
-                            totalPages:0
+                    content: [
+                        {
+                            id: 1,
+                            username: "user1",
+                            email: "user1@email.com",
+                            image: null
                         }
-                    
-                    }))
+                    ],
+                    page: 0,
+                    size: 0,
+                    totalPages: 0
+                }
+
+            }))
+
+    }),
+
+    rest.post("/api/1.0/auth", (req, res, ctx) => {
+        return res(ctx.status(200),
+            ctx.json({
+                username: "user5",
+                data: {
+                    token: "token"
+                }
+            }))
     })
 )
 
-beforeEach(()=>{
-    server.resetHandlers(   )
+beforeEach(() => {
+    server.resetHandlers()
 })
 
 beforeAll(() => server.listen())
@@ -100,7 +111,7 @@ describe("Routing", () => {
     ${"/"} | ${"Signup"} | ${"signup-page"}
     ${"/signup"} | ${"Home"} | ${"home-page"}
     ${"/signup"} | ${"Login"} | ${"login-page"}
-    `("displays $name after clicking $clickInTo link", ({initialPath, clickInTo, name}) => {
+    `("displays $name after clicking $clickInTo link", ({ initialPath, clickInTo, name }) => {
         setup(initialPath)
 
         const link = screen.getByRole("link", { name: clickInTo })
@@ -110,6 +121,32 @@ describe("Routing", () => {
         expect(screen.getByTestId(name)).toBeInTheDocument()
     })
 
-    
-    
+
+
+})
+
+
+describe("Login", () => {
+
+    const setup = (path) => {
+        window.history.pushState({}, "", path)
+
+        render(<App />)
+    }
+    it("redirects to homepage after login", async () => {
+        setup("/login")
+
+        const email = screen.getByLabelText("Email")
+        const password = screen.getByLabelText("Password")
+
+        userEvent.type(email, "user5@mail.com");
+        userEvent.type(password, "password");
+
+        const button = screen.getByRole("button", { name: "Login" })
+
+        userEvent.click(button)
+
+        const page = await screen.findByTestId("home-page")
+        expect(page).toBeInTheDocument()
+    })
 })
